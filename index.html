@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>実験ツール</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f0f4f8;
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header .icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a3d5c;
+    letter-spacing: .05em;
+  }
+  .header p {
+    font-size: 13px;
+    color: #7a9ab0;
+    margin-top: 6px;
+  }
+  .tools {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .tool-card {
+    background: #fff;
+    border: 1px solid #d0dde8;
+    border-radius: 14px;
+    padding: 24px 28px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  }
+  .tool-card:active {
+    transform: translateY(0);
+  }
+  .tool-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+  }
+  .tool-info h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a3d5c;
+    margin-bottom: 4px;
+  }
+  .tool-info p {
+    font-size: 12px;
+    color: #7a9ab0;
+    line-height: 1.5;
+  }
+  .arrow {
+    margin-left: auto;
+    font-size: 20px;
+    color: #b0c8da;
+    flex-shrink: 0;
+  }
+  .footer {
+    margin-top: 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #b0c0cc;
+    letter-spacing: .08em;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="icon">⚗️</div>
+  <h1>実験ツール</h1>
+  <p>大阪公立大学高専・君家研究室</p>
+</div>
+
+<div class="tools">
+  <a class="tool-card" href="lab-report.html">
+    <div class="tool-icon">📋</div>
+    <div class="tool-info">
+      <h2>実験記録レポート</h2>
+      <p>写真・動画にコメントを付けて<br>PDF形式で記録・共有</p>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+
+  <a class="tool-card" href="lab-visualizer.html">
+    <div class="tool-icon">📊</div>
+    <div class="tool-info">
+      <h2>実験データ可視化</h2>
+      <p>CSVデータをグラフで可視化<br>折れ線・棒・散布図に対応</p>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+</div>
+
+<div class="footer">oyanaoyuki-omu.github.io/tool</div>
+
+</body>
+</html>
