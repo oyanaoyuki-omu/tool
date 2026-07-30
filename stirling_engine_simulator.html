@@ -97,7 +97,7 @@ svg text{font-family:'Noto Sans JP',sans-serif;}
 <div class="stage">
   <div class="engine-col panel">
     <h2>断面アニメーション</h2>
-    <svg id="engineSvg" width="100%" viewBox="0 0 300 290">
+    <svg id="engineSvg" width="100%" viewBox="-21 0 380 220">
       <defs>
         <marker id="none"></marker>
         <linearGradient id="upperGrad" x1="0" y1="0" x2="0" y2="1">
@@ -113,33 +113,30 @@ svg text{font-family:'Noto Sans JP',sans-serif;}
       <circle cx="117.5" cy="30" r="18" fill="none" stroke="var(--gauge)" stroke-width="1.2"/>
       <circle id="pin" cx="117.5" cy="14" r="3" fill="var(--accent)"/>
       <!-- 氷ゾーン(y=96〜130、上部アルミ板の外側。ダイアフラム空間の幅は空けておく) -->
-      <rect x="60" y="96" width="30" height="34" fill="var(--cold-fill)"/>
-      <rect x="145" y="96" width="30" height="34" fill="var(--cold-fill)"/>
+      <rect id="iceZoneLeft" x="7.5" y="76" width="30" height="34" fill="var(--cold-fill)"/>
+      <rect id="iceZoneRight" x="145" y="76" width="30" height="34" fill="var(--cold-fill)"/>
       <!-- diaphragm(y=58〜82、フライホイールと氷ゾーンの間、氷ゾーンより手前) -->
-      <rect id="diaphragmGas" x="90" y="70" width="55" height="60" fill="var(--cold-fill)"/>
-      <line x1="90" y1="70" x2="90" y2="130" stroke="var(--cold-deep)" stroke-width="1"/>
-      <line x1="145" y1="70" x2="145" y2="130" stroke="var(--cold-deep)" stroke-width="1"/>
+      <rect id="diaphragmGas" x="90" y="70" width="55" height="40" fill="var(--cold-fill)"/>
+      <line id="diaWallLeft" x1="90" y1="70" x2="90" y2="110" stroke="var(--cold-deep)" stroke-width="1"/>
+      <line id="diaWallRight" x1="145" y1="70" x2="145" y2="110" stroke="var(--cold-deep)" stroke-width="1"/>
       <path id="diaphragm" d="M90 70 Q117.5 70 145 70" fill="none" stroke="var(--membrane)" stroke-width="2"/>
-      <!-- 上部アルミ板(冷/氷側) -->
-      <line x1="55" y1="130" x2="110" y2="130" stroke="var(--cold)" stroke-width="3"/>
-      <line x1="125" y1="130" x2="180" y2="130" stroke="var(--cold)" stroke-width="3"/>
-      <path d="M180 130 L205 116 L222 116" fill="none" stroke="var(--cold)" stroke-width="1"/>
-      <text x="225" y="119" font-size="13" fill="var(--cold-deep)">冷(氷)</text>
-      <!-- cylinder(y=130〜220) -->
-      <rect id="cylUpperGas" x="61" y="131" width="113" height="65" fill="url(#upperGrad)"/>
-      <rect id="cylLowerGas" x="61" y="208" width="113" height="11" fill="url(#lowerGrad)"/>
-      <rect x="60" y="130" width="115" height="90" rx="8" fill="none" stroke="var(--ink)" stroke-width="0.8"/>
-      <rect id="displacer" x="70" y="196" width="95" height="12" rx="6" fill="var(--gauge)"/>
+      <!-- cylinder(y=110〜160) -->
+      <rect id="cylUpperGas" x="8.5" y="111" width="218" height="65" fill="url(#upperGrad)"/>
+      <rect id="cylLowerGas" x="8.5" y="188" width="218" height="11" fill="url(#lowerGrad)"/>
+      <rect x="7.5" y="110" width="220" height="50" rx="8" fill="none" stroke="var(--ink)" stroke-width="0.8"/>
+      <rect id="displacer" x="17.5" y="176" width="200" height="12" rx="6" fill="var(--gauge)"/>
+      <!-- 上部アルミ板(冷/氷側)(ゾーン塗りより手前に描画) -->
+      <line x1="2.5" y1="110" x2="110" y2="110" stroke="var(--cold)" stroke-width="3"/>
+      <line x1="125" y1="110" x2="232.5" y2="110" stroke="var(--cold)" stroke-width="3"/>
+      <path d="M232.5 110 L255 96 L272 96" fill="none" stroke="var(--cold)" stroke-width="1"/>
+      <text x="275" y="99" font-size="13" fill="var(--cold-deep)">冷(氷)</text>
+      <!-- お湯ゾーン(下部アルミ板の外側) -->
+      <rect x="7.5" y="160" width="220" height="34" fill="var(--hot-fill)"/>
       <!-- 下部アルミ板(熱/お湯側) -->
-      <line x1="55" y1="220" x2="180" y2="220" stroke="var(--hot)" stroke-width="3"/>
-      <path d="M180 220 L205 236 L222 236" fill="none" stroke="var(--hot)" stroke-width="1"/>
-      <text x="225" y="240" font-size="13" fill="var(--hot-deep)">熱(お湯)</text>
-      <!-- お湯ゾーン(y=220〜254、下部アルミ板の外側) -->
-      <rect x="60" y="220" width="115" height="34" fill="var(--hot-fill)"/>
-      <!-- flames(y=258〜274) -->
-      <path d="M85 274 Q89 262 93 269 Q97 259 101 274 Z" fill="var(--hot)"/>
-      <path d="M113 274 Q117 260 121 268 Q125 258 129 274 Z" fill="var(--hot)"/>
-      <path d="M141 274 Q145 262 149 269 Q153 259 157 274 Z" fill="var(--hot)"/>    </svg>
+      <line x1="2.5" y1="160" x2="232.5" y2="160" stroke="var(--hot)" stroke-width="3"/>
+      <path d="M232.5 160 L255 176 L272 176" fill="none" stroke="var(--hot)" stroke-width="1"/>
+      <text x="275" y="180" font-size="13" fill="var(--hot-deep)">熱(お湯)</text>
+    </svg>
     <div class="readouts" style="margin-top:32px;">
       <div class="readout rpm-box">
         <div class="lbl">推定回転数</div>
@@ -180,7 +177,7 @@ svg text{font-family:'Noto Sans JP',sans-serif;}
       </div>
       <div class="slider-row">
         <label>体積比(ダイアフラム/ディスプレーサ) <span class="val" id="ratioVal">0.39</span></label>
-        <input type="range" id="ratioSlider" min="0.05" max="2" step="0.01" value="0.388">
+        <input type="range" id="ratioSlider" min="0.05" max="1" step="0.01" value="0.388">
       </div>
       <div class="slider-row">
         <label>無効容積(デッドボリューム比) <span class="val" id="deadVal">0.10</span></label>
@@ -316,12 +313,12 @@ function drawSweep(thC,tcC,deadFrac,curRatio,snapK,phaseH){
   const padL=44,padR=16,padT=14,padB=28,W=420,H=180;
   const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
   const ratios=[]; const rpms=[];
-  for(let r=0.05;r<=2.001;r+=0.06){
+  for(let r=0.05;r<=1.001;r+=0.03){
     const res = computeCycle(thC,tcC,r,deadFrac,snapK,phaseH,60);
     ratios.push(r); rpms.push(rpmFromW(res.W));
   }
   const rmax = Math.max(...rpms,1);
-  const sx = r => x0 + (r-0.05)/(2-0.05)*(x1-x0);
+  const sx = r => x0 + (r-0.05)/(1-0.05)*(x1-x0);
   const sy = v => y0 - v/rmax*(y0-y1);
   let d = 'M '+sx(ratios[0])+' '+sy(rpms[0]);
   for(let i=1;i<ratios.length;i++) d += ' L '+sx(ratios[i])+' '+sy(rpms[i]);
@@ -341,6 +338,23 @@ function clockLabel(h){
   return rise+'時/'+fall+'時';
 }
 
+const iceZoneLeft=document.getElementById('iceZoneLeft'), iceZoneRight=document.getElementById('iceZoneRight'),
+      diaWallLeft=document.getElementById('diaWallLeft'), diaWallRight=document.getElementById('diaWallRight');
+let diaLeftX = 90, diaRightX = 145;
+
+function updateDiaphragmGeometry(ratio){
+  // 体積比が大きいほどダイアフラム空間を幅広く描画する(見た目のみ。物理計算には影響しません)
+  // 体積比1.0でシリンダ幅(115px)に近いサイズになるよう、比の値をほぼそのまま幅[px]に対応させる
+  const width = Math.max(15, Math.min(260, ratio*200)); // ディスプレーサ幅(200px)を基準に、見た目の幅比率が体積比の数値と一致するように
+  diaLeftX = 117.5 - width/2;
+  diaRightX = 117.5 + width/2;
+  diaWallLeft.setAttribute('x1', diaLeftX); diaWallLeft.setAttribute('x2', diaLeftX);
+  diaWallRight.setAttribute('x1', diaRightX); diaWallRight.setAttribute('x2', diaRightX);
+  diaphragmGas.setAttribute('x', diaLeftX); diaphragmGas.setAttribute('width', width);
+  iceZoneLeft.setAttribute('width', Math.max(0, diaLeftX-7.5));
+  iceZoneRight.setAttribute('x', diaRightX); iceZoneRight.setAttribute('width', Math.max(0, 227.5-diaRightX));
+}
+
 function recompute(){
   const thC = +thSlider.value, tcC = +tcSlider.value, ratio = +ratioSlider.value, dead = +deadSlider.value, snapK = +snapSlider.value, phaseH = +phaseSlider.value;
   thVal.textContent = thC+' ℃';
@@ -349,6 +363,7 @@ function recompute(){
   deadVal.textContent = dead.toFixed(2);
   snapVal.textContent = snapK.toFixed(1);
   phaseVal.textContent = clockLabel(phaseH);
+  updateDiaphragmGeometry(ratio);
   current = computeCycle(thC,tcC,ratio,dead,snapK,phaseH);
   currentSnapK = snapK;
   currentPhaseH = phaseH;
@@ -445,12 +460,12 @@ function updateVisuals(a, dt){
   } else if(vfrac > 0.15){
     displacerAtBottom = false;
   }
-  const dy = 202 - vfrac*66; // 上部青線(y=130)〜下部赤線(y=220)の間を、少し余白を残して上下動
+  const dy = 142 - vfrac*26; // 上部青線(y=110)〜下部赤線(y=160)の間を、少し余白を残して上下動
   displacer.setAttribute('y', dy);
-  cylUpperGas.setAttribute('y', 131);
-  cylUpperGas.setAttribute('height', Math.max(0, dy-131));
-  cylLowerGas.setAttribute('y', dy+12);
-  cylLowerGas.setAttribute('height', Math.max(0, 219-(dy+12)));
+  cylUpperGas.setAttribute('y', 111);
+  cylUpperGas.setAttribute('height', Math.max(0, (dy+6)-111));
+  cylLowerGas.setAttribute('y', dy+6);
+  cylLowerGas.setAttribute('height', Math.max(0, 159-(dy+6)));
   // ディスプレーサが下がるほど、押し上げられた暖かい空気が上側にじわっと広がる(遅れつき)
   const tau = 0.6;
   const lagFactor = (dt!=null) ? 1-Math.exp(-dt/tau) : 1;
@@ -464,7 +479,7 @@ function updateVisuals(a, dt){
   const pfrac = (1+Math.cos(a-Math.PI/2))/2;
   diaphragmGas.setAttribute('fill', lerpColor(zoneColdRGB, zoneHotRGB, pfrac));
   const ctrlY = 82 - pfrac*24;
-  diaphragm.setAttribute('d','M90 70 Q117.5 '+ctrlY+' 145 70');
+  diaphragm.setAttribute('d','M'+diaLeftX+' 70 Q117.5 '+ctrlY+' '+diaRightX+' 70');
   diaphragm.setAttribute('stroke', 'var(--membrane)');
   diaphragm.setAttribute('stroke-width', (1.6 + pfrac*1.2).toFixed(2)); // 高圧(膨らみ)ほど太く見せて張力を表現
 
