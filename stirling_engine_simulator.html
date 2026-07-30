@@ -33,8 +33,8 @@ header p{margin:0;color:var(--ink-soft);font-size:16px;line-height:1.7;}
 }
 .panel + .panel{margin-top:20px;}
 .panel h2{
-  font-size:14px;text-transform:uppercase;letter-spacing:.08em;
-  color:var(--ink-soft);margin:0 0 14px;font-weight:500;
+  font-size:17px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink);margin:0 0 14px;font-weight:700;
 }
 .slider-row{margin-bottom:16px;}
 .slider-row:last-child{margin-bottom:0;}
@@ -64,7 +64,7 @@ input[type=range]::-moz-range-thumb{
 .readout .num{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;}
 .readout .unit{font-size:13px;color:var(--ink-soft);margin-left:3px;}
 .rpm-box{grid-column:1/-1;text-align:center;padding:16px;}
-.rpm-box .num{font-size:48px;color:var(--accent);}
+.rpm-box .num{font-size:48px;color:var(--membrane);}
 .stall{color:var(--hot-deep) !important;}
 .stage{display:flex;gap:22px;flex-wrap:wrap;}
 .engine-col{flex:0 0 340px;}
@@ -176,7 +176,7 @@ svg text{font-family:'Noto Sans JP',sans-serif;}
         <input type="range" id="tcSlider" min="-50" max="30" step="1" value="0">
       </div>
       <div class="slider-row">
-        <label>体積比(ダイアフラム/ディスプレーサ) <span class="val" id="ratioVal">0.39</span></label>
+        <label>体積比(ダイアフラム/ディスプレーサスイープ容積) <span class="val" id="ratioVal">0.39</span></label>
         <input type="range" id="ratioSlider" min="0.05" max="1" step="0.01" value="0.388">
       </div>
       <div class="slider-row">
@@ -279,7 +279,8 @@ function drawPV(res){
   const svg = document.getElementById('pvSvg');
   const padL=54,padR=16,padT=14,padB=34,W=420,H=220;
   const x0=padL, x1=W-padR, y0=H-padB, y1=padT;
-  const vmin=res.Vmin, vmax=res.Vmax, pmin=res.Pmin, pmax=res.Pmax;
+  // 軸を固定して、パラメータを変えたときのループ面積(仕事量)の変化が見た目でも比較できるようにする
+  const vmin=30e-6, vmax=50e-6, pmin=60000, pmax=115000;
   const sx = v => x0 + (v-vmin)/(vmax-vmin||1)*(x1-x0);
   const sy = p => y0 - (p-pmin)/(pmax-pmin||1)*(y0-y1);
   let d = 'M '+sx(res.V[0])+' '+sy(res.P[0]);
