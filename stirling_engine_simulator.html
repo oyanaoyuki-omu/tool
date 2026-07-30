@@ -280,19 +280,19 @@ function drawPV(res){
   const padL=54,padR=16,padT=14,padB=34,W=420,H=220;
   const x0=padL, x1=W-padR, y0=H-padB, y1=padT;
   // 軸を固定して、パラメータを変えたときのループ面積(仕事量)の変化が見た目でも比較できるようにする
-  const vmin=30e-6, vmax=50e-6, pmin=60000, pmax=115000;
+  const vmin=30e-6, vmax=45e-6, pmin=60000, pmax=120000;
   const sx = v => x0 + (v-vmin)/(vmax-vmin||1)*(x1-x0);
   const sy = p => y0 - (p-pmin)/(pmax-pmin||1)*(y0-y1);
   let d = 'M '+sx(res.V[0])+' '+sy(res.P[0]);
   for(let i=1;i<res.V.length;i++) d += ' L '+sx(res.V[i])+' '+sy(res.P[i]);
   d += ' Z';
   let ticks = '';
-  for(let i=0;i<=4;i++){
-    const v = vmin + (vmax-vmin)*i/4;
+  for(let v=vmin; v<=vmax+1e-9; v+=5e-6){
     const tx = sx(v);
     ticks += '<line x1="'+tx+'" y1="'+y0+'" x2="'+tx+'" y2="'+(y0+4)+'" stroke="var(--ink-soft)"/>';
     ticks += '<text class="axis-label" x="'+tx+'" y="'+(y0+16)+'" text-anchor="middle">'+(v*1e6).toFixed(0)+'</text>';
-    const p = pmin + (pmax-pmin)*i/4;
+  }
+  for(let p=pmin; p<=pmax+1e-6; p+=15000){
     const ty = sy(p);
     ticks += '<line x1="'+(x0-4)+'" y1="'+ty+'" x2="'+x0+'" y2="'+ty+'" stroke="var(--ink-soft)"/>';
     ticks += '<text class="axis-label" x="'+(x0-8)+'" y="'+ty+'" text-anchor="end" dominant-baseline="central">'+(p/1000).toFixed(0)+'</text>';
