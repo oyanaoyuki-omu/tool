@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>γ型スターリングエンジン シミュレータ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F1E9; --panel:#FFFFFF; --panel2:#FBFAF6; --ink:#26251F; --ink-soft:#69675C;
+  --line:#DEDACB; --hot:#D85A30; --hot-deep:#8A331B; --hot-fill:#FAE7DF;
+  --cold:#2F72AA; --cold-deep:#134A73; --cold-fill:#E4EFF7;
+  --gauge:#8B8A80; --accent:#B8722F; --membrane:#4C8C5C;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Noto Sans JP','Space Grotesk',sans-serif;
+  padding:28px 20px 60px;
+}
+.wrap{max-width:1180px;margin:0 auto;}
+header{margin-bottom:22px;}
+h1{
+  font-family:'Space Grotesk','Noto Sans JP',sans-serif;
+  font-size:27px;font-weight:700;margin:0 0 8px;letter-spacing:.2px;
+}
+header p{margin:0;color:var(--ink-soft);font-size:16px;line-height:1.7;}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:20px;}
+@media (max-width:880px){.grid{grid-template-columns:1fr;}}
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;
+}
+.panel + .panel{margin-top:20px;}
+.panel h2{
+  font-size:14px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin:0 0 14px;font-weight:500;
+}
+.slider-row{margin-bottom:16px;}
+.slider-row:last-child{margin-bottom:0;}
+.slider-row label{
+  display:flex;justify-content:space-between;font-size:15.5px;margin-bottom:7px;
+}
+.slider-row label span.val{
+  font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:500;
+}
+input[type=range]{
+  width:100%;height:4px;-webkit-appearance:none;appearance:none;
+  background:var(--line);border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--panel);box-shadow:0 0 0 1px var(--accent);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);
+  box-shadow:0 0 0 1px var(--accent);cursor:pointer;
+}
+.readouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.readout{
+  border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel2);
+}
+.readout .lbl{font-size:13px;color:var(--ink-soft);margin-bottom:5px;}
+.readout .num{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;}
+.readout .unit{font-size:13px;color:var(--ink-soft);margin-left:3px;}
+.rpm-box{grid-column:1/-1;text-align:center;padding:16px;}
+.rpm-box .num{font-size:48px;color:var(--accent);}
+.stall{color:var(--hot-deep) !important;}
+.stage{display:flex;gap:22px;flex-wrap:wrap;}
+.engine-col{flex:0 0 340px;}
+.charts-col{flex:1;min-width:240px;display:flex;flex-direction:column;gap:18px;}
+button#toggle{
+  margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel2);font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;color:var(--ink);
+}
+button#toggle:hover{border-color:var(--accent);}
+.caption{font-size:13.5px;color:var(--ink-soft);margin-top:8px;line-height:1.7;}
+svg text{font-family:'Noto Sans JP',sans-serif;}
+.axis-label{font-size:12px;fill:var(--ink-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>γ型スターリングエンジン シミュレータ</h1>
+<ul id="introList" style="margin:0;padding-left:1.2em;color:var(--ink-soft);font-size:16px;line-height:1.8;">
+<li>熱源温度、冷却温度、ダイアフラム/ディスプレーサ(スイープ容積)の体積比を変えると、圧力サイクルと推定回転数がどう変化するかを見られます。</li>
+<li>実際のシュミット・サイクル理論(温度差型スターリングエンジンの古典的な解析手法)に基づいた簡易物理モデルで、以下を計算・可視化しています。</li>
+<li>熱源温度、冷却温度、体積比、無効容積(デッドボリューム)から、クランク角ごとの圧力 P(θ) をイデアルガス方程式ベースで計算</li>
+<li>P-V線図のループ面積からサイクル1回あたりの仕事量を算出</li>
+<li>仕事量とフリクション損失のバランスから推定回転数(rpm)を逆算し、断面図をその速度でアニメーション</li>
+<li>断面の実測値:シリンダ内径62mm、ディスプレーサ直径58mm、厚さ2.5mm、ストローク3.5mm</li>
+<li>熱源70℃、冷却0℃、体積比0.39、無効容積0.10、ディスプレーサの動き2.0、ディスプレーサ上下タイミング5時/11時で実機に近い120rpm程度になるよう較正</li>
+</ul>
+</header>
+
+<div class="stage">
+  <div class="engine-col panel">
+    <h2>断面アニメーション</h2>
+    <svg id="engineSvg" width="100%" viewBox="0 0 300 290">
+      <defs>
+        <marker id="none"></marker>
+        <linearGradient id="upperGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E4EFF7"/>
+          <stop id="upperGradStop2" offset="100%" stop-color="#E4EFF7"/>
+        </linearGradient>
+        <linearGradient id="lowerGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop id="lowerGradStop1" offset="0%" stop-color="#FAE7DF"/>
+          <stop offset="100%" stop-color="#FAE7DF"/>
+        </linearGradient>
+      </defs>
+      <!-- flywheel(y=12〜48) -->
+      <circle cx="117.5" cy="30" r="18" fill="none" stroke="var(--gauge)" stroke-width="1.2"/>
+      <circle id="pin" cx="117.5" cy="14" r="3" fill="var(--accent)"/>
+      <!-- 氷ゾーン(y=96〜130、上部アルミ板の外側。ダイアフラム空間の幅は空けておく) -->
+      <rect x="60" y="96" width="30" height="34" fill="var(--cold-fill)"/>
+      <rect x="145" y="96" width="30" height="34" fill="var(--cold-fill)"/>
+      <!-- diaphragm(y=58〜82、フライホイールと氷ゾーンの間、氷ゾーンより手前) -->
+      <rect id="diaphragmGas" x="90" y="70" width="55" height="60" fill="var(--cold-fill)"/>
+      <line x1="90" y1="70" x2="90" y2="130" stroke="var(--cold-deep)" stroke-width="1"/>
+      <line x1="145" y1="70" x2="145" y2="130" stroke="var(--cold-deep)" stroke-width="1"/>
+      <path id="diaphragm" d="M90 70 Q117.5 70 145 70" fill="none" stroke="var(--membrane)" stroke-width="2"/>
+      <!-- 上部アルミ板(冷/氷側) -->
+      <line x1="55" y1="130" x2="110" y2="130" stroke="var(--cold)" stroke-width="3"/>
+      <line x1="125" y1="130" x2="180" y2="130" stroke="var(--cold)" stroke-width="3"/>
+      <path d="M180 130 L205 116 L222 116" fill="none" stroke="var(--cold)" stroke-width="1"/>
+      <text x="225" y="119" font-size="13" fill="var(--cold-deep)">冷(氷)</text>
+      <!-- cylinder(y=130〜220) -->
+      <rect id="cylUpperGas" x="61" y="131" width="113" height="65" fill="url(#upperGrad)"/>
+      <rect id="cylLowerGas" x="61" y="208" width="113" height="11" fill="url(#lowerGrad)"/>
+      <rect x="60" y="130" width="115" height="90" rx="8" fill="none" stroke="var(--ink)" stroke-width="0.8"/>
+      <rect id="displacer" x="70" y="196" width="95" height="12" rx="6" fill="var(--gauge)"/>
+      <!-- 下部アルミ板(熱/お湯側) -->
+      <line x1="55" y1="220" x2="180" y2="220" stroke="var(--hot)" stroke-width="3"/>
+      <path d="M180 220 L205 236 L222 236" fill="none" stroke="var(--hot)" stroke-width="1"/>
+      <text x="225" y="240" font-size="13" fill="var(--hot-deep)">熱(お湯)</text>
+      <!-- お湯ゾーン(y=220〜254、下部アルミ板の外側) -->
+      <rect x="60" y="220" width="115" height="34" fill="var(--hot-fill)"/>
+      <!-- flames(y=258〜274) -->
+      <path d="M85 274 Q89 262 93 269 Q97 259 101 274 Z" fill="var(--hot)"/>
+      <path d="M113 274 Q117 260 121 268 Q125 258 129 274 Z" fill="var(--hot)"/>
+      <path d="M141 274 Q145 262 149 269 Q153 259 157 274 Z" fill="var(--hot)"/>    </svg>
+    <div class="readouts" style="margin-top:32px;">
+      <div class="readout rpm-box">
+        <div class="lbl">推定回転数</div>
+        <div class="num" id="rpmOut">—</div>
+        <span class="unit">rpm</span>
+      </div>
+      <div class="readout">
+        <div class="lbl">サイクル仕事量</div>
+        <div class="num" id="workOut" style="font-size:16px;">—</div>
+      </div>
+      <div class="readout">
+        <div class="lbl">圧力振幅</div>
+        <div class="num" id="pampOut" style="font-size:16px;">—</div>
+      </div>
+    </div>
+    <button id="toggle">一時停止</button>
+    <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:14px;">
+      <input type="checkbox" id="soundToggle" checked style="width:16px;height:16px;">
+      ディスプレーサが降りたときに音を鳴らす
+    </label>
+    <div class="slider-row" style="margin-top:12px;">
+      <label>アニメーション速度 <span class="val" id="speedVal">実速度(1.00x)</span></label>
+      <input type="range" id="speedSlider" min="0.05" max="1" step="0.01" value="1">
+    </div>
+    <p class="caption">デフォルトは推定rpm通りの実速度です。見やすくしたい場合はスライダーで遅くできます。</p>
+  </div>
+
+  <div class="charts-col">
+    <div class="panel">
+      <h2>操作パラメータ</h2>
+      <div class="slider-row">
+        <label>熱源温度(お湯側) <span class="val" id="thVal">70 ℃</span></label>
+        <input type="range" id="thSlider" min="40" max="150" step="1" value="70">
+      </div>
+      <div class="slider-row">
+        <label>冷却温度(氷側) <span class="val" id="tcVal">0 ℃</span></label>
+        <input type="range" id="tcSlider" min="-50" max="30" step="1" value="0">
+      </div>
+      <div class="slider-row">
+        <label>体積比(ダイアフラム/ディスプレーサ) <span class="val" id="ratioVal">0.39</span></label>
+        <input type="range" id="ratioSlider" min="0.05" max="2" step="0.01" value="0.388">
+      </div>
+      <div class="slider-row">
+        <label>無効容積(デッドボリューム比) <span class="val" id="deadVal">0.10</span></label>
+        <input type="range" id="deadSlider" min="0" max="0.5" step="0.01" value="0.097">
+      </div>
+      <div class="slider-row">
+        <label>ディスプレーサの動き:滑らか⇔スナップ状(磁石駆動) <span class="val" id="snapVal">2.0</span></label>
+        <input type="range" id="snapSlider" min="1" max="4" step="0.1" value="2.0">
+      </div>
+      <div class="slider-row">
+        <label>ディスプレーサ上下タイミング(クランク時計位置) <span class="val" id="phaseVal">5時/11時</span></label>
+        <input type="range" id="phaseSlider" min="3" max="6" step="0.1" value="5">
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>P-V線図(圧力 vs 全体積)</h2>
+      <svg id="pvSvg" width="100%" viewBox="0 0 420 220"></svg>
+      <p class="caption">囲まれた面積(ループの内側)がサイクル1回あたりの仕事量に対応します。</p>
+    </div>
+
+    <div class="panel">
+      <h2>体積比 vs 推定回転数(現在の温度条件で掃引)</h2>
+      <svg id="sweepSvg" width="100%" viewBox="0 0 420 180"></svg>
+      <p class="caption">現在の設定値を丸印で表示。曲線の山がその温度条件での最適な体積比です。</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const R = 8.314;
+// 断面図の実測値から算出(ボア62mm/ディスプレーサ58mm・厚2.5mm、ストローク3.5mm、固定クリアランス上2mm/下5mm)
+const VEswept = 10.566e-6;   // ディスプレーサの実効スイープ容積 m^3 (π×31²×3.5mm)
+const VEclear = 15.094e-6;   // 熱側(下、固定5mm)の最小容積 m^3
+const VCclear = 6.038e-6;    // 冷側(上、固定2mm)の最小容積 m^3
+const alpha = Math.PI/2;
+
+function shapeFrac(theta, k){
+  // k=1: 通常の滑らかな余弦運動。k>1: 両端で滞留し中間で素早く動く「スナップ状」(磁石駆動を想定)
+  const s = (1-Math.cos(theta))/2;
+  const sk = Math.pow(s,k), rk = Math.pow(1-s,k);
+  return sk/(sk+rk);
+}
+
+function computeCycle(ThC, TcC, ratio, deadFrac, snapK, phaseHours, steps){
+  steps = steps || 120;
+  snapK = snapK || 1;
+  phaseHours = phaseHours || 0;
+  const displacerPhase = phaseHours * Math.PI/6; // 1時間 = 30°
+  const Th = ThC+273.15, Tc = TcC+273.15;
+  const VPswept = ratio*VEswept;
+  const Vdead = deadFrac*VEswept; // 穴(78.5mm3)+ディスプレーサ周囲隙間(942mm3)相当
+  const Tavg = (Th+Tc)/2;
+  const Vref = VEclear+VCclear+VEswept/2+VPswept/2+Vdead;
+  const n = 101325*Vref/(R*Tavg);
+  const P=[], V=[];
+  for(let i=0;i<=steps;i++){
+    const th = 2*Math.PI*i/steps;
+    const s = shapeFrac(th - displacerPhase, snapK);
+    const VE = VEclear + VEswept*s;
+    const VC = VCclear + VEswept*(1-s) + (VPswept/2)*(1-Math.cos(th-alpha));
+    const denom = VE/Th + VC/Tc + Vdead/Tavg;
+    P.push(n*R/denom);
+    V.push(VE+VC+Vdead);
+  }
+  let W=0;
+  for(let i=0;i<steps;i++) W += 0.5*(P[i]+P[i+1])*(V[i+1]-V[i]);
+  return {P,V,W:Math.abs(W),Pmax:Math.max(...P),Pmin:Math.min(...P),Vmax:Math.max(...V),Vmin:Math.min(...V)};
+}
+
+const base = computeCycle(70,0,0.39,0.10,2.0,5,120); // 実測値(熱源70℃・冷却0℃・体積比0.39・無効容積0.10・スナップ2.0・5時/11時)を基準に120rpmを較正
+const threshold = base.W*0.12;
+const kCal = 120/Math.sqrt(Math.max(base.W-threshold,1e-12));
+function rpmFromW(W){
+  const eff = W-threshold;
+  return eff>0 ? Math.min(900, kCal*Math.sqrt(eff)) : 0;
+}
+
+const thSlider=document.getElementById('thSlider'), tcSlider=document.getElementById('tcSlider'),
+      ratioSlider=document.getElementById('ratioSlider'), deadSlider=document.getElementById('deadSlider'),
+      snapSlider=document.getElementById('snapSlider'), phaseSlider=document.getElementById('phaseSlider');
+const thVal=document.getElementById('thVal'), tcVal=document.getElementById('tcVal'),
+      ratioVal=document.getElementById('ratioVal'), deadVal=document.getElementById('deadVal'),
+      snapVal=document.getElementById('snapVal'), phaseVal=document.getElementById('phaseVal');
+const rpmOut=document.getElementById('rpmOut'), workOut=document.getElementById('workOut'), pampOut=document.getElementById('pampOut');
+
+let current = null;
+let currentRPM = 0;
+
+function fmtWork(W){
+  const mJ = W*1000;
+  if(mJ < 1) return (mJ*1000).toFixed(1)+' µJ';
+  return mJ.toFixed(3)+' mJ';
+}
+function fmtP(Pa){ return (Pa/1000).toFixed(1)+' kPa'; }
+
+function drawPV(res){
+  const svg = document.getElementById('pvSvg');
+  const padL=54,padR=16,padT=14,padB=34,W=420,H=220;
+  const x0=padL, x1=W-padR, y0=H-padB, y1=padT;
+  const vmin=res.Vmin, vmax=res.Vmax, pmin=res.Pmin, pmax=res.Pmax;
+  const sx = v => x0 + (v-vmin)/(vmax-vmin||1)*(x1-x0);
+  const sy = p => y0 - (p-pmin)/(pmax-pmin||1)*(y0-y1);
+  let d = 'M '+sx(res.V[0])+' '+sy(res.P[0]);
+  for(let i=1;i<res.V.length;i++) d += ' L '+sx(res.V[i])+' '+sy(res.P[i]);
+  d += ' Z';
+  let ticks = '';
+  for(let i=0;i<=4;i++){
+    const v = vmin + (vmax-vmin)*i/4;
+    const tx = sx(v);
+    ticks += '<line x1="'+tx+'" y1="'+y0+'" x2="'+tx+'" y2="'+(y0+4)+'" stroke="var(--ink-soft)"/>';
+    ticks += '<text class="axis-label" x="'+tx+'" y="'+(y0+16)+'" text-anchor="middle">'+(v*1e6).toFixed(0)+'</text>';
+    const p = pmin + (pmax-pmin)*i/4;
+    const ty = sy(p);
+    ticks += '<line x1="'+(x0-4)+'" y1="'+ty+'" x2="'+x0+'" y2="'+ty+'" stroke="var(--ink-soft)"/>';
+    ticks += '<text class="axis-label" x="'+(x0-8)+'" y="'+ty+'" text-anchor="end" dominant-baseline="central">'+(p/1000).toFixed(0)+'</text>';
+  }
+  svg.innerHTML =
+    '<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" stroke="var(--line)"/>' +
+    '<line x1="'+x0+'" y1="'+y0+'" x2="'+x0+'" y2="'+y1+'" stroke="var(--line)"/>' +
+    ticks +
+    '<path d="'+d+'" fill="var(--hot-fill)" fill-opacity="0.6" stroke="var(--accent)" stroke-width="1.4"/>' +
+    '<text class="axis-label" x="'+((x0+x1)/2)+'" y="'+(H-4)+'" text-anchor="middle">全体積 V (cm³)</text>' +
+    '<text class="axis-label" x="12" y="'+((y0+y1)/2)+'" text-anchor="middle" transform="rotate(-90 12 '+((y0+y1)/2)+')">圧力 P (kPa)</text>' +
+    '<circle id="pvDot" r="4" fill="var(--hot-deep)" cx="'+sx(res.V[0])+'" cy="'+sy(res.P[0])+'"/>';
+  svg.dataset.sx = JSON.stringify({vmin,vmax,x0,x1});
+  svg.dataset.sy = JSON.stringify({pmin,pmax,y0,y1});
+}
+
+function drawSweep(thC,tcC,deadFrac,curRatio,snapK,phaseH){
+  const svg = document.getElementById('sweepSvg');
+  const padL=44,padR=16,padT=14,padB=28,W=420,H=180;
+  const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+  const ratios=[]; const rpms=[];
+  for(let r=0.05;r<=2.001;r+=0.06){
+    const res = computeCycle(thC,tcC,r,deadFrac,snapK,phaseH,60);
+    ratios.push(r); rpms.push(rpmFromW(res.W));
+  }
+  const rmax = Math.max(...rpms,1);
+  const sx = r => x0 + (r-0.05)/(2-0.05)*(x1-x0);
+  const sy = v => y0 - v/rmax*(y0-y1);
+  let d = 'M '+sx(ratios[0])+' '+sy(rpms[0]);
+  for(let i=1;i<ratios.length;i++) d += ' L '+sx(ratios[i])+' '+sy(rpms[i]);
+  const curRes = computeCycle(thC,tcC,curRatio,deadFrac,snapK,phaseH,60);
+  const curRpm = rpmFromW(curRes.W);
+  svg.innerHTML =
+    '<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" stroke="var(--line)"/>' +
+    '<line x1="'+x0+'" y1="'+y0+'" x2="'+x0+'" y2="'+y1+'" stroke="var(--line)"/>' +
+    '<path d="'+d+'" fill="none" stroke="var(--cold-deep)" stroke-width="1.6"/>' +
+    '<circle cx="'+sx(curRatio)+'" cy="'+sy(curRpm)+'" r="4.5" fill="var(--accent)" stroke="#fff" stroke-width="1"/>' +
+    '<text class="axis-label" x="'+((x0+x1)/2)+'" y="'+(H-6)+'" text-anchor="middle">体積比(ダイアフラム/ディスプレーサ)</text>' +
+    '<text class="axis-label" x="12" y="'+((y0+y1)/2)+'" text-anchor="middle" transform="rotate(-90 12 '+((y0+y1)/2)+')">推定 rpm</text>';
+}
+
+function clockLabel(h){
+  const rise = h%12 || 12, fall = (6+h)%12 || 12;
+  return rise+'時/'+fall+'時';
+}
+
+function recompute(){
+  const thC = +thSlider.value, tcC = +tcSlider.value, ratio = +ratioSlider.value, dead = +deadSlider.value, snapK = +snapSlider.value, phaseH = +phaseSlider.value;
+  thVal.textContent = thC+' ℃';
+  tcVal.textContent = tcC+' ℃';
+  ratioVal.textContent = ratio.toFixed(2);
+  deadVal.textContent = dead.toFixed(2);
+  snapVal.textContent = snapK.toFixed(1);
+  phaseVal.textContent = clockLabel(phaseH);
+  current = computeCycle(thC,tcC,ratio,dead,snapK,phaseH);
+  currentSnapK = snapK;
+  currentPhaseH = phaseH;
+  currentRPM = rpmFromW(current.W);
+  if(currentRPM<=0){
+    rpmOut.textContent = '停止'; rpmOut.classList.add('stall');
+  } else {
+    rpmOut.textContent = currentRPM.toFixed(0); rpmOut.classList.remove('stall');
+  }
+  workOut.textContent = fmtWork(current.W);
+  pampOut.textContent = fmtP(current.Pmax-current.Pmin);
+  drawPV(current);
+  drawSweep(thC,tcC,dead,ratio,snapK,phaseH);
+}
+
+[thSlider,tcSlider,ratioSlider,deadSlider,snapSlider,phaseSlider].forEach(s=>s.addEventListener('input',recompute));
+
+let angle=0, playing=true, lastT=null, speedScale=1, currentSnapK=1, currentPhaseH=0;
+const speedSlider=document.getElementById('speedSlider'), speedVal=document.getElementById('speedVal');
+speedSlider.addEventListener('input', function(){
+  speedScale = +this.value;
+  speedVal.textContent = speedScale>=0.995 ? '実速度(1.00x)' : speedScale.toFixed(2)+'x';
+});
+const pin=document.getElementById('pin'), diaphragm=document.getElementById('diaphragm'), displacer=document.getElementById('displacer'), diaphragmGas=document.getElementById('diaphragmGas'),
+      cylUpperGas=document.getElementById('cylUpperGas'), cylLowerGas=document.getElementById('cylLowerGas');
+
+// シリンダ上下の空間色は、実際の熱伝達の"遅れ"を表現するための演出(圧力計算とは別のロジックで、計算結果には影響しません)
+let upperWarmth = 0, lowerCoolness = 1;
+function lerpColor(c1, c2, t){
+  t = Math.max(0, Math.min(1, t));
+  const r = Math.round(c1[0]+(c2[0]-c1[0])*t);
+  const g = Math.round(c1[1]+(c2[1]-c1[1])*t);
+  const b = Math.round(c1[2]+(c2[2]-c1[2])*t);
+  return 'rgb('+r+','+g+','+b+')';
+}
+const zoneColdRGB = [228,239,247], zoneHotRGB = [250,231,223];
+
+// ディスプレーサが降りきった(磁石が離れて自重で落下した)瞬間に鳴らす効果音
+const soundToggle = document.getElementById('soundToggle');
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+}
+function playHoofHit(t){
+  // コツッというアタック(ノイズ+バンドパス、乾いた木を叩く感じ)
+  const dur = 0.025;
+  const n = Math.floor(audioCtx.sampleRate*dur);
+  const buffer = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<n;i++){
+    const decay = Math.pow(1 - i/n, 2);
+    data[i] = (Math.random()*2-1) * decay;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.4;
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.9, t);
+  noise.connect(bp); bp.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+  noise.start(t);
+  // ごく短い低音の芯(控えめ)
+  const osc = audioCtx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(320, t);
+  osc.frequency.exponentialRampToValueAtTime(200, t+0.03);
+  const oscGain = audioCtx.createGain();
+  oscGain.gain.setValueAtTime(0.001, t);
+  oscGain.gain.exponentialRampToValueAtTime(0.35, t+0.004);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, t+0.045);
+  osc.connect(oscGain); oscGain.connect(audioCtx.destination);
+  osc.start(t); osc.stop(t+0.05);
+}
+function playThud(){
+  if(!soundToggle.checked) return;
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  playHoofHit(t);         // コツ
+  playHoofHit(t+0.08);    // コツ(2連の"コツコツ")
+}
+let displacerAtBottom = false;
+
+function updateVisuals(a, dt){
+  const pinA = a - Math.PI/2; // ピン(コンロッド)はダイアフラムに直結しているので、その位相を直接表示
+  const px = 117.5+16*Math.sin(pinA), py = 30-16*Math.cos(pinA);
+  pin.setAttribute('cx',px); pin.setAttribute('cy',py);
+  const vfrac = shapeFrac(a - currentPhaseH*Math.PI/6, currentSnapK);
+  if(vfrac < 0.05 && !displacerAtBottom){
+    playThud();
+    displacerAtBottom = true;
+  } else if(vfrac > 0.15){
+    displacerAtBottom = false;
+  }
+  const dy = 202 - vfrac*66; // 上部青線(y=130)〜下部赤線(y=220)の間を、少し余白を残して上下動
+  displacer.setAttribute('y', dy);
+  cylUpperGas.setAttribute('y', 131);
+  cylUpperGas.setAttribute('height', Math.max(0, dy-131));
+  cylLowerGas.setAttribute('y', dy+12);
+  cylLowerGas.setAttribute('height', Math.max(0, 219-(dy+12)));
+  // ディスプレーサが下がるほど、押し上げられた暖かい空気が上側にじわっと広がる(遅れつき)
+  const tau = 0.6;
+  const lagFactor = (dt!=null) ? 1-Math.exp(-dt/tau) : 1;
+  const targetUpperWarmth = 1 - vfrac;
+  const targetLowerCoolness = vfrac;
+  upperWarmth += (targetUpperWarmth-upperWarmth)*lagFactor;
+  lowerCoolness += (targetLowerCoolness-lowerCoolness)*lagFactor;
+  document.getElementById('upperGradStop2').setAttribute('stop-color', lerpColor(zoneColdRGB, zoneHotRGB, upperWarmth));
+  document.getElementById('lowerGradStop1').setAttribute('stop-color', lerpColor(zoneHotRGB, zoneColdRGB, lowerCoolness));
+  // ダイアフラム自身の膨らみ具合に直接連動:膨らむ(空気が流入)ほど赤、しぼむほど青
+  const pfrac = (1+Math.cos(a-Math.PI/2))/2;
+  diaphragmGas.setAttribute('fill', lerpColor(zoneColdRGB, zoneHotRGB, pfrac));
+  const ctrlY = 82 - pfrac*24;
+  diaphragm.setAttribute('d','M90 70 Q117.5 '+ctrlY+' 145 70');
+  diaphragm.setAttribute('stroke', 'var(--membrane)');
+  diaphragm.setAttribute('stroke-width', (1.6 + pfrac*1.2).toFixed(2)); // 高圧(膨らみ)ほど太く見せて張力を表現
+
+  const dot = document.getElementById('pvDot');
+  if(dot && current){
+    const idx = Math.round((a/(2*Math.PI))*(current.V.length-1)) % current.V.length;
+    const sxData = JSON.parse(document.getElementById('pvSvg').dataset.sx);
+    const syData = JSON.parse(document.getElementById('pvSvg').dataset.sy);
+    const vx = sxData.x0 + (current.V[idx]-sxData.vmin)/((sxData.vmax-sxData.vmin)||1)*(sxData.x1-sxData.x0);
+    const vy = syData.y0 - (current.P[idx]-syData.pmin)/((syData.pmax-syData.pmin)||1)*(syData.y0-syData.y1);
+    dot.setAttribute('cx',vx); dot.setAttribute('cy',vy);
+  }
+}
+
+function loop(t){
+  if(lastT===null) lastT=t;
+  const dt = Math.min((t-lastT)/1000, 0.05);
+  lastT = t;
+  if(playing && currentRPM>0){
+    const revPerSec = currentRPM/60;
+    angle += 2*Math.PI*revPerSec*dt*speedScale;
+    angle %= 2*Math.PI;
+    updateVisuals(angle, dt);
+  }
+  requestAnimationFrame(loop);
+}
+
+document.getElementById('toggle').addEventListener('click', function(){
+  playing = !playing;
+  this.textContent = playing ? '一時停止' : '再生';
+});
+
+recompute();
+updateVisuals(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
